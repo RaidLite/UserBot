@@ -1,0 +1,9 @@
+Telethon
+httpx
+requests
+googletrans
+typing-extensions
+pystyle
+phonenumbers
+colorama
+qrcode
