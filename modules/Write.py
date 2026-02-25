@@ -1,5 +1,6 @@
 from io import BytesIO
 from urllib.parse import quote
+
 import httpx
 from telethon import events
 

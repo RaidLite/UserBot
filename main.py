@@ -1,26 +1,38 @@
 import asyncio
-from importlib.util import module_from_spec, spec_from_file_location
 import logging
 import os
+import qrcode
 from pathlib import Path
 from typing import Callable
-
-import qrcode
 from colorama import init
 from pystyle import Colorate, Colors
 from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError
-
+from importlib.util import module_from_spec, spec_from_file_location
 from cfg import API_ID, API_HASH, BANNER
 
 logging.basicConfig(level=logging.INFO)
 init(autoreset=True)
 
+async def create_client(session_name: str):
+    os.makedirs("sessions", exist_ok=True)
+    session_file = Path("sessions") / session_name
+    client = TelegramClient(
+        str(session_file),
+        API_ID,
+        API_HASH
+    )
+    await client.connect()
+    return client
+
 def p(text):
-    return print(Colorate.Vertical(Colors.rainbow, text + " "))
+    return print(colored(text) + " ")
+
+def colored(prompt):
+    return Colorate.Vertical(Colors.rainbow, prompt)
 
 async def async_input(prompt: str = "") -> str:
-    colored_prompt = Colorate.Vertical(Colors.rainbow, prompt)
+    colored_prompt = colored(prompt)
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(None, input, colored_prompt + " ")
 
@@ -32,18 +44,19 @@ async def call_maybe_async(func: Callable, *args):
 async def main():
     cls()
     os.makedirs("sessions", exist_ok=True)
-    print(Colorate.Vertical(Colors.rainbow, BANNER))
+    p(BANNER)
 
     choice = await async_input("Введи выбор: ")
 
-    if choice == "1":
-        await use_registered_account()
-    elif choice == "2":
-        await register_account()
-    elif choice == "3":
-        return
-    else:
-        p("Неверный ввод. Введи 1, 2 или 3.")
+    match choice:
+        case "1":
+            await use_registered_account()
+        case "2":
+            await register_account()
+        case "3":
+            return
+        case _:
+            p("Неверный ввод. Введи 1, 2 или 3.")
 
 async def use_registered_account():
     sessions = [f for f in os.listdir("sessions") if f.endswith(".session")]
@@ -63,23 +76,15 @@ async def use_registered_account():
         return
 
     module_path = Path("modules")
-    session_path = Path("sessions") / sessions[idx]
-
-    client = TelegramClient(session_path,
-                            api_id=API_ID,
-                            api_hash=API_HASH,
-                            device_model="Samsung SM-A730F",
-                            system_version="Android 12",
-                            app_version='12.3.1',
-                            lang_code='ru'
-                            )
+    session_name = Path(sessions[idx]).stem
+    cc = await create_client(session_name)
 
     try:
-        await load_modules(client, module_path)
+        await load_modules(cc, module_path)
     except KeyboardInterrupt:
         p("\nОстановка...")
     finally:
-        await client.disconnect()
+        await cc.disconnect()
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -89,16 +94,7 @@ async def register_account():
         clear()
         p('РЕГИСТРАЦИЯ НОВОГО АККАУНТА')
         sid = await async_input('Введите любое название для аккаунта (английскими буквами): ')
-        session_path = Path("sessions") / sid
-        client = TelegramClient(session_path,
-                                api_id=API_ID,
-                                api_hash=API_HASH,
-                                device_model="Samsung SM-A730F",
-                                system_version="Android 12",
-                                app_version='12.3.1',
-                                lang_code='ru'
-                                )
-        await client.connect()
+        client = await create_client(sid)
         try:
             if not await client.is_user_authorized():
                 qr = await client.qr_login()
@@ -129,7 +125,6 @@ async def load_modules(client: TelegramClient, path: Path):
         p(f"Папка модулей не найдена: {path}")
         return
 
-    await client.start()
     p(f"Аккаунт {client.session.filename} запущен")
 
     modules = list(path.glob("*.py"))

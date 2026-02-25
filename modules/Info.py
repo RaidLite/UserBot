@@ -89,8 +89,7 @@ def a(client):
                 add("👥 Супергруппа", "Да" if getattr(chat_info, "megagroup", None) else None)
                 add("✅ Верифицирован", "Да" if getattr(chat_info, "verified", None) else None)
                 add("⚠️ Скам", "Да" if getattr(chat_info, "scam", None) else None)
-                add("📅 Создан", chat_info.date.strftime("%d.%m.%Y %H:%M") if hasattr(chat_info,
-                                                                                     "date") and chat_info.date else None)
+                add("📅 Создан", chat_info.date.strftime("%d.%m.%Y %H:%M") if hasattr(chat_info, "date") and chat_info.date else None)
                 add("👥 Участников", getattr(full_chat, "participants_count", None))
 
                 if full_chat.about:

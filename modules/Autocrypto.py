@@ -1,13 +1,10 @@
 import asyncio
 import re
-
 from telethon import events, functions, types
 
 CHATS_BLACKLIST = {1622808649, 1559501630, 1985737506, 5014831088}
 CODE_REGEX = re.compile(r"(CryptoBot|send|tonRocketBot|wallet|xrocket)\?start=([A-Za-z0-9_-]+)", re.I)
-
 activated = set()
-
 
 async def fast_activate(client, bot_username, code):
     if code in activated:

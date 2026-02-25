@@ -1,5 +1,6 @@
 from html import escape
 from random import choice
+
 from telethon import events
 
 shablons = [
