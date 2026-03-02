@@ -1,5 +1,6 @@
 from telethon import events
 
+
 def a(client):
     @client.on(events.NewMessage(pattern=r'\.dump', outgoing=True))
     async def dump_to_saved(event):
