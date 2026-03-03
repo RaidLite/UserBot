@@ -86,6 +86,11 @@ async def use_registered_account():
     session_name = Path(sessions[idx]).stem
     cc = await create_client(session_name)
 
+    if not await cc.is_user_authorized():
+        print_colored(f"Сессия {session_name} невалидна или удалена!")
+        await cc.disconnect()
+        return
+
     try:
         await load_modules(cc, module_path)
     except KeyboardInterrupt:

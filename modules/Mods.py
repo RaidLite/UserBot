@@ -24,6 +24,7 @@ def a(client):
     async def afk(event):
         if event.fwd_from:
             return
+        await event.delete()
         me = await event.client.get_me()
         first_name = me.first_name
         second_name = me.last_name

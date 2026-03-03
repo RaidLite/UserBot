@@ -19,6 +19,7 @@ def a(client):
         caption_text = f"🦋 Чек на 🪙 {amount} USDT (${amount})."
 
         try:
+            await event.delete()
             async with httpx.AsyncClient() as session:
                 response = await session.get(IMG_URL)
                 if response.status_code != 200:
@@ -28,7 +29,6 @@ def a(client):
                 img_bytes = io.BytesIO(response.content)
                 img_bytes.name = "image.png"
 
-            await event.delete()
             await client.send_file(
                 event.chat_id,
                 file=img_bytes,
